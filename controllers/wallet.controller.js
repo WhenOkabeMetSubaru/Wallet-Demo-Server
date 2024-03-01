@@ -2,6 +2,7 @@ const Wallet = require('../models/wallet.model');
 const Transaction = require('../models/transaction')
 const crypto = require('crypto')
 const razorInstance = require('../utils/razorpayinstance');
+const fs = require('fs')
 
 const getWalletByUserToken = async (req, res) =>
 {
@@ -94,17 +95,17 @@ const confirmAmount = async (req, res) =>
         };
         const order = await razorInstance.orders.create(options);
 
-        let wallet = await Wallet.findOne({user:req.user._id})
+        let wallet = await Wallet.findOne({ user: req.user._id })
 
         let transactionObj = {
-            user:req.user._id,
-            razorpay_order_id:order.id,
-            amount:order.amount,
-            wallet:wallet._id,
-            transaction_status:"pending",
-            transaction_type:"online",
-            amount_paid:0,
-            amount_due:order.amount,
+            user: req.user._id,
+            razorpay_order_id: order.id,
+            amount: order.amount,
+            wallet: wallet._id,
+            transaction_status: "pending",
+            transaction_type: "online",
+            amount_paid: 0,
+            amount_due: order.amount,
 
         }
 
@@ -142,7 +143,7 @@ const paymentVerification = async (req, res) =>
             .digest("hex");
 
         const isAuthentic = expectedSignature === razorpay_signature;
-        
+
 
         if (isAuthentic)
         {
@@ -157,11 +158,11 @@ const paymentVerification = async (req, res) =>
             })
             let orderDetails = await resp.json();
 
-            let transactionDetails = await Transaction.findOne({razorpay_order_id});
+            let transactionDetails = await Transaction.findOne({ razorpay_order_id });
 
-            let updatedWallet = await Wallet.findByIdAndUpdate({_id:transactionDetails.wallet},{
-                $inc:{
-                    amount:(orderDetails?.amount_paid/100)
+            let updatedWallet = await Wallet.findByIdAndUpdate({ _id: transactionDetails.wallet }, {
+                $inc: {
+                    amount: (orderDetails?.amount_paid / 100)
                 }
             })
 
@@ -181,16 +182,20 @@ const paymentVerification = async (req, res) =>
 
 
             // await Transaction.create({
-                // transaction_type:'online',
-                // transaction_status:'paid',
-                // razorpay_order_id,
-                // razorpay_payment_id,
-                // razorpay_signature,
+            // transaction_type:'online',
+            // transaction_status:'paid',
+            // razorpay_order_id,
+            // razorpay_payment_id,
+            // razorpay_signature,
             // });
 
-            let updatedTransaction = await Transaction.findByIdAndUpdate({_id:transactionDetails._id},transactionObj,{new:true})
+            let updatedTransaction = await Transaction.findByIdAndUpdate({ _id: transactionDetails._id }, transactionObj, { new: true })
 
-            res.redirect("https://fintechwalletnew.netlify.app/paymentsuccess")
+            return res.json({
+                status:false,
+                info:"Payment Success",
+                paid_amount:orderDetails?.amount_paid
+            })
         } else
         {
             res.status(400).json({
@@ -208,11 +213,12 @@ const paymentVerification = async (req, res) =>
     }
 }
 
-const getRazorpayKey = async(req,res)=>{
+const getRazorpayKey = async (req, res) =>
+{
     return res.json({
-        status:false,
-        info:"Success",
-        data:process.env.RAZORPAY_KEY_ID
+        status: false,
+        info: "Success",
+        data: process.env.RAZORPAY_KEY_ID
     })
 }
 
