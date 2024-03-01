@@ -149,7 +149,7 @@ const paymentVerification = async (req, res) =>
             // Database comes here
             let authNew = 'Basic ' + Buffer.from("rzp_test_h29uCFs0FZuqn5" + ':' + "vTYEKFdaqkhwftISc2SCkumV").toString('base64')
 
-            let resp = await fetch(`https://api.razorpay.com/v1/orders/order_Nh5vMPDNrYNSWo`, {
+            let resp = await fetch(`https://api.razorpay.com/v1/orders/${razorpay_order_id}`, {
                 method: "GET",
                 headers: {
                     Authorization: authNew
