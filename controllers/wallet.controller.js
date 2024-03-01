@@ -190,10 +190,7 @@ const paymentVerification = async (req, res) =>
 
             let updatedTransaction = await Transaction.findByIdAndUpdate({_id:transactionDetails._id},transactionObj,{new:true})
 
-            res.json({
-                status:false,
-                info:orderDetails.status
-            })
+            res.redirect("https://fintechwalletnew.netlify.app/paymentsuccess")
         } else
         {
             res.status(400).json({
