@@ -97,6 +97,7 @@ const confirmAmount = async (req, res) =>
 
         let wallet = await Wallet.findOne({ user: req.user._id })
 
+
         let transactionObj = {
             user: req.user._id,
             razorpay_order_id: order.id,
@@ -119,6 +120,7 @@ const confirmAmount = async (req, res) =>
         });
     } catch (error)
     {
+        
         return res.status(500).json({
             status: true,
             info: error.message
@@ -191,11 +193,10 @@ const paymentVerification = async (req, res) =>
 
             let updatedTransaction = await Transaction.findByIdAndUpdate({ _id: transactionDetails._id }, transactionObj, { new: true })
 
-            return res.json({
-                status:false,
-                info:"Payment Success",
-                paid_amount:orderDetails?.amount_paid
-            })
+            if(orderDetails.status !=='paid'){
+                return res.redirect("https://fintechwalletnew.netlify.app/paymentfailure")
+            }
+            return res.redirect("https://fintechwalletnew.netlify.app/paymentsuccess")
         } else
         {
             res.status(400).json({
